@@ -22,7 +22,7 @@ export default defineConfig(({mode})=>{
      * 在嵌套的公共路径下部署项目, 构建时所有资源的路径根据base配置被重写。
      * 指定了上一级公共目录，这一行就不能少
      */
-    base: mode === 'development' ? '/' : './dist',
+    base: mode === 'development' ? '/' : './',
 
     /** 指定公共目录，可用项目根目录的相对路径 */
     // publicDir: '../../../../dist/www/public',

@@ -16,17 +16,30 @@ const useLogin = () => {
 }
 
 const useProfile = () => {
+  const uid = Math.random().toString(36).slice(-8)
   const profile = ref({
-    nickname: Math.random().toString(36).slice(-8),
+    nickname: uid,
+    uid,
     avatar,
   })
+  const updateNickname = (customName: string) => {
+    profile.value.nickname = customName
+  }
 
-  return {profile}
+  return {profile, updateNickname}
+}
+
+const useShelf = () => {
+  const publish = ref<string[]>([])
+  const likes = ref<string[]>([])
+  const footprint = ref<string[]>([])
+  return {publish, likes, footprint}
 }
 
 export const useUserStore = defineStore('user', () => {
   const login = useLogin()
   const userInfo = useProfile()
+  const shelf = useShelf()
 
-  return { ...login, ...userInfo }
+  return { ...login, ...userInfo, ...shelf }
 })

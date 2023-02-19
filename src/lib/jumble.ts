@@ -1,9 +1,12 @@
+import { keyExists } from '@/utils/types';
+import type { ProductFE, Product, CategoryTypes, SubCategoryTypes} from './types'
+import { Category, SubCategory } from './types'
 
 export const enum Jumble {
   DIGITAL = 'digital',
   BOOKS = 'books',
   SPORTS = 'sports',
-  FITTING = 'fitting'
+  FITTING = 'fitting',
 }
 
 const menuMap = {
@@ -21,51 +24,60 @@ export const stuff = {
 }
 
 export interface StuffItem {
-  id: string;
-  name: string;
-  descr: string;
-  createdTime: number;
+  id: string
+  name: string
+  descr: string
+  createdTime: number
 }
 
-function genStuff(type: string, name: string){
-  const arr = new Array(100).fill(1)
-  return arr.map((v, i)=>{
+function genStuff(type: string, name: string) {
+  const arr = new Array(20).fill(1)
+  return arr.map((v, i) => {
     const ramdownStr = Math.random().toString(32).slice(2)
+    const ownerId = Math.random().toString(36).slice(-8)
     return {
       id: `${type}_${ramdownStr}`,
       name: `${name}_${i}`,
+      category: type,
       descr: `${name}_描述_${i}`,
-      createdTime: Date.now()
+      ownerId,
+      createdTime: Date.now(),
     }
   })
 }
 
 const stuffTree = {
-  [Jumble.DIGITAL]:{
+  [Jumble.DIGITAL]: {
     laptop: '笔记本电脑',
     cellphone: '手机',
     headset: '耳机',
-    sportsWatch: '运动手表'
+    sportsWatch: '运动手表',
   },
   [Jumble.SPORTS]: {
-    racket: '球拍'
+    racket: '球拍',
   },
   [Jumble.BOOKS]: {
-    scifi: '科幻'
+    scifi: '科幻',
   },
   [Jumble.FITTING]: {
     treadmill: '跑步机',
     spinning: '动感单车',
+  },
+}
+
+export function getCategoryName(cateogry: CategoryTypes, subCategory?: SubCategoryTypes){
+  const cc = stuffTree[cateogry]
+  const c2 = subCategory && keyExists(cc, subCategory) ? cc[subCategory] : ''
+  return {
+    c1: menuMap[cateogry],
+    c2
   }
 }
 
-export function genStuffMenu(){
-  return Object.keys(stuffTree)
-  .reduce((arr, key)=>{
+export function genStuffMenu() {
+  return Object.keys(stuffTree).reduce((arr, key) => {
     const subMenu = stuffTree[key as keyof typeof stuffTree]
-    const subGroup = Object
-    .keys(subMenu)
-    .map(subKey=>({
+    const subGroup = Object.keys(subMenu).map(subKey => ({
       value: subKey,
       label: subMenu[subKey as keyof typeof subMenu],
     }))
@@ -73,7 +85,7 @@ export function genStuffMenu(){
       value: key,
       label: menuMap[key as keyof typeof menuMap],
       children: subGroup,
-      subMenuType: 'item'
+      subMenuType: 'item',
     })
 
     return arr
@@ -85,4 +97,23 @@ type StuffMenu = {
   label: string
   subMenuType?: 'group' | 'item'
   children?: StuffMenu[]
+}
+
+export function transProductToServer(product: ProductFE): Product {
+  const key = product.category
+  return {
+    ...product,
+    category: Category[key],
+    subCategory: product.subCategory ? SubCategory[product.subCategory] : 0,
+  }
+}
+
+export function transProductToFE(product: Product): ProductFE{
+  const key = product.category
+  const val = Category[key] as CategoryTypes
+  return {
+    ...product,
+    category: val,
+    subCategory: product.subCategory ? SubCategory[product.subCategory] as SubCategoryTypes : undefined,
+  }
 }

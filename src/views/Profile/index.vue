@@ -2,16 +2,13 @@
 import { ref, computed } from "vue";
 import Avatar from "./Avatar.vue";
 import UserMenu from "./UserMenu.vue";
+import Shelf from "./Shelf";
 
 const currBox = ref("1");
 const selectorHandler = (key: string) => {
   currBox.value = key;
 };
 
-const text = computed(() => {
-  if (currBox.value === "1") return "发布";
-  return "收藏";
-});
 </script>
 
 <template>
@@ -41,7 +38,7 @@ const text = computed(() => {
       </el-aside>
       <el-main class="ml-4" style="padding-top: 0">
         <UserMenu :selector-handler="selectorHandler" />
-        <el-empty :description="`oops! 还没${text}物品哦`" />
+        <Shelf :curr-shelf="currBox" />
       </el-main>
     </el-container>
   </div>

@@ -1,38 +1,34 @@
 <script lang="ts" setup>
 import { reactive, ref } from "vue";
 import type { FormInstance, FormRules, UploadProps } from "element-plus";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { Plus } from "@element-plus/icons-vue";
 import { genStuffMenu } from "@/lib/jumble";
+import { useUserStore } from "@/stores/user";
+import { useProductStore } from "@/stores/products";
+import type { CategoryTypes, SubCategoryTypes } from "@/lib/types";
+import { useRouter } from 'vue-router';
+import { wrapPromise } from '@/utils/share'
 
+const { setProduct } = useProductStore();
+const router = useRouter();
 const asideMenu = genStuffMenu();
 
-const formSize = ref<"" | "default" | "small" | "large">("default");
 const ruleFormRef = ref<FormInstance>();
 const ruleForm = reactive({
   name: "",
-  region: "",
-  category: "",
+  category: "" as CategoryTypes,
+  subCategory: "" as SubCategoryTypes,
   hasInvoice: true,
   imageUrls: [] as string[],
-  price: "",
-  desc: "",
+  price: 0,
+  descr: "",
 });
-const handleRemove: UploadProps["onRemove"] = (uploadFile, uploadFiles) => {
-  console.log(uploadFile, uploadFiles);
-};
 
 const rules = reactive<FormRules>({
   name: [
     { required: true, message: "请输入物品名称", trigger: "blur" },
     { min: 3, max: 15, message: "名称3~15个字", trigger: "blur" },
-  ],
-  region: [
-    {
-      required: true,
-      message: "请输入交易地点",
-      trigger: "change",
-    },
   ],
   category: [
     {
@@ -55,30 +51,60 @@ const rules = reactive<FormRules>({
       trigger: "change",
     },
   ],
-  desc: [{ required: true, message: "Please input activity form", trigger: "blur" }],
+  descr: [{ required: true, message: "Please input activity form", trigger: "blur" }],
 });
 
-const imageUrl = ref("");
-const fileList = ref([]);
-const handleAvatarSuccess: UploadProps["onSuccess"] = (response, uploadFile) => {
-  ruleForm.imageUrls.push(URL.createObjectURL(uploadFile.raw!));
-};
+// const imageUrl = ref("");
+const fileUrls = ref({});
+
 const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
-  if (rawFile.type !== "image/jpeg") {
-    ElMessage.error("Avatar picture must be JPG format!");
-    return false;
-  } else if (rawFile.size / 1024 / 1024 > 2) {
+  if (rawFile.size / 1024 / 1024 > 2) {
     ElMessage.error("Avatar picture size can not exceed 2MB!");
     return false;
   }
   return true;
 };
+const onChangeImages: UploadProps["onRemove"] = (uploadFile, uploadFiles) => {
+  const urls: string[] = [];
+  uploadFiles.forEach((v) => urls.push(URL.createObjectURL(uploadFile.raw!)));
+  ruleForm.imageUrls = urls;
+};
+
+const onPost = () => {
+  const { profile } = useUserStore();
+  const id = Math.random().toString(32).slice(2)
+  const r = {
+    ...ruleForm,
+    ownerId: profile.uid,
+    id,
+    createdTime: Date.now(),
+  };
+  console.log('rrr--', r)
+  setProduct(r);
+  return id
+};
+
+const openPostMsg = async (id: string) => {
+  const [err] = await wrapPromise(ElMessageBox.confirm('物品成功发布，是否去查看物品详情？', '', {
+      confirmButtonText: '确定',
+      cancelButtonText: '继续发布',
+      type: 'success',
+    }))
+  if(err) return
+  router.push({
+    name: 'detail',
+    params: {
+      id
+    }
+  })
+}
 
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate((valid, fields) => {
     if (valid) {
-      console.log("submit!");
+      const id = onPost();
+      openPostMsg(id)
     } else {
       console.log("error submit!", fields);
     }
@@ -90,10 +116,13 @@ const resetForm = (formEl: FormInstance | undefined) => {
   formEl.resetFields();
 };
 
-const options = Array.from({ length: 10000 }).map((_, idx) => ({
-  value: `${idx + 1}`,
-  label: `${idx + 1}`,
-}));
+const selectCategory = (values: unknown | string[]) => {
+  console.log('values', values)
+  if (Array.isArray(values)) {
+    ruleForm.category = values[0] as CategoryTypes;
+    ruleForm.subCategory = values[1];
+  }
+};
 </script>
 
 <template>
@@ -103,7 +132,6 @@ const options = Array.from({ length: 10000 }).map((_, idx) => ({
     :rules="rules"
     label-width="120px"
     class="demo-ruleForm mt-4 pt-16 w-4/5 mx-auto"
-    :size="formSize"
     status-icon
   >
     <el-form-item label="物品名称" prop="name">
@@ -113,12 +141,9 @@ const options = Array.from({ length: 10000 }).map((_, idx) => ({
       <el-cascader
         class="w-52"
         :placeholder="'选择物品类别'"
-        v-model="ruleForm.category"
         :options="asideMenu"
+        @change="selectCategory"
       />
-    </el-form-item>
-    <el-form-item class="w-52" label="交易地点" prop="region">
-      <el-input v-model="ruleForm.region" />
     </el-form-item>
     <el-form-item label="原价" prop="price">
       <el-input class="w-52" v-model="ruleForm.price" type="number" />
@@ -126,19 +151,18 @@ const options = Array.from({ length: 10000 }).map((_, idx) => ({
     <el-form-item label="有发票" prop="hasInvoice">
       <el-switch v-model="ruleForm.hasInvoice" />
     </el-form-item>
-    <el-form-item label="描述" prop="desc">
-      <el-input v-model="ruleForm.desc" type="textarea" />
+    <el-form-item label="描述" prop="descr">
+      <el-input v-model="ruleForm.descr" type="textarea" />
     </el-form-item>
     <el-form-item label="物品图片">
       <el-upload
-        v-model:file-list="fileList"
-        action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+        accept="image/png, image/jpeg"
         list-type="picture-card"
+        :auto-upload="false"
         :multiple="true"
         :limit="3"
-        :on-success="handleAvatarSuccess"
         :before-upload="beforeAvatarUpload"
-        :on-remove="handleRemove"
+        :on-change="onChangeImages"
       >
         <el-icon><Plus /></el-icon>
       </el-upload>
