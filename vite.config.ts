@@ -31,7 +31,7 @@ export default defineConfig(({mode})=>{
       },
     },
     build: {
-      outDir: path.resolve(__dirname, './dist/www/quotation'),
+      outDir: path.resolve(__dirname, './dist/exchange'),
       assetsDir: 'assets',
       emptyOutDir: true,
       rollupOptions: {
