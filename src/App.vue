@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { RouterView } from "vue-router";
 import Menu from "@/components/Menu.vue";
+import { onMounted } from 'vue';
+import { useProductStore } from './stores/products';
+import {genTestDataOnload} from '@/lib/jumble';
+
+const { useProductState } = useProductStore()
+
+onMounted(() => {
+  useProductState(genTestDataOnload())
+})
+
 </script>
 
 <template>

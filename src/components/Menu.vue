@@ -1,23 +1,22 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import {type Views, ViewNames} from '@/router'
+import { ViewNames } from '@/router'
 import { House, Shop } from "@element-plus/icons-vue";
+import {usePageStore} from '@/stores/page';
 
 const router = useRouter();
+const {currPage, updatePage} = usePageStore()
 
-const activeIndex = ref("Processing");
-
-const handleSelect = (key: string, keyPath: string[]): void => {
-  console.log(key, keyPath);
-  const [routeName] = keyPath;
-  router.push({name: routeName});
+const handleSelect = (key: string): void => {
+  router.push({name: key});
+  updatePage(key as ViewNames)
 };
 </script>
 
 <template>
   <el-menu
-    :default-active="activeIndex"
+    :default-active="currPage"
     class="el-menu-demo items-center fixed top-0 left-0 w-screen z-30"
     style="height: 8vh; max-height: 50px"
     mode="horizontal"

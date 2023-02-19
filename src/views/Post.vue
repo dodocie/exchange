@@ -117,7 +117,6 @@ const resetForm = (formEl: FormInstance | undefined) => {
 };
 
 const selectCategory = (values: unknown | string[]) => {
-  console.log('values', values)
   if (Array.isArray(values)) {
     ruleForm.category = values[0] as CategoryTypes;
     ruleForm.subCategory = values[1];

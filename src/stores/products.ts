@@ -8,12 +8,16 @@ const useProduct = () => {
   const setProduct = (product: ProductFE) => {
     products.value[product.id] = transProductToServer(product)
   }
+  const useProductState = (productGroup: Record<string, Product>) => {
+    products.value = productGroup
+  }
 
-  const getProducts = (ids: string[]) => {
+  const getProducts = (ids?: string[]) => {
+    if(!ids) return Object.keys(products.value).map(id=>transProductToFE(products.value[id]))
     return ids.map(id=>products.value[id] && transProductToFE(products.value[id])).filter(v => !!v)
   }
 
-  return {setProduct, getProducts}
+  return {products, setProduct, getProducts, useProductState}
 }
 
 

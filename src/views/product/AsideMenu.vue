@@ -1,12 +1,11 @@
 <script lang="ts" setup>
 import { genStuffMenu } from "@/lib/jumble";
 
-const props = defineProps<{ onSelect: (value: string) => void }>();
+const props = defineProps<{ onSelect: (value: string[]) => void }>();
 const asideMenu = genStuffMenu();
 
 const handleSelect = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath);
-  props.onSelect(key);
+  props.onSelect(keyPath);
 };
 </script>
 

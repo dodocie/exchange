@@ -28,6 +28,17 @@ export type ProductFE = {
 
 export type CategoryTypes = keyof typeof Category
 export type SubCategoryTypes = keyof typeof SubCategory
+export type CategoryVal = {
+  digital: Digital
+  sports: Sports
+  books: Books
+  fitting: fitting
+}
+
+type Digital = 'laptop' | 'cellphone' | 'headset' | 'sportsWatch'
+type fitting = 'treadmill' | 'spinning'
+type Sports = 'racket'
+type Books = 'scifi'
 
 /** 如果用const 常量枚举，编译时会直接编译成值，比如 const digital = 0, 就不能用动态的方式访问 */
 export enum Category {

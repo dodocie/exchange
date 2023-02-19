@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
+import { usePageStore } from "@/stores/page";
 import { useRouter } from "vue-router";
+import { ViewNames } from '@/router';
 
 const router = useRouter();
 const { enrolled } = useUserStore();
+const { updatePage} = usePageStore()
 
 const joinNow = () => {
-  const query = {};
   if (!enrolled) {
+    updatePage(ViewNames.LOGIN)
     router.push({ name: "login", query: { redirect: "post" } });
     return;
   }
   router.push("post");
+  updatePage(ViewNames.POST)
 };
 </script>
 

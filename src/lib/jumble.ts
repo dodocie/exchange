@@ -9,43 +9,6 @@ export const enum Jumble {
   FITTING = 'fitting',
 }
 
-const menuMap = {
-  [Jumble.DIGITAL]: '数码',
-  [Jumble.BOOKS]: '书籍',
-  [Jumble.SPORTS]: '运动',
-  [Jumble.FITTING]: '家居',
-} as const
-
-export const stuff = {
-  [Jumble.DIGITAL]: genStuff(Jumble.DIGITAL, '数码'),
-  [Jumble.BOOKS]: genStuff(Jumble.BOOKS, '书籍'),
-  [Jumble.SPORTS]: genStuff(Jumble.SPORTS, '运动'),
-  [Jumble.FITTING]: genStuff(Jumble.FITTING, '家居'),
-}
-
-export interface StuffItem {
-  id: string
-  name: string
-  descr: string
-  createdTime: number
-}
-
-function genStuff(type: string, name: string) {
-  const arr = new Array(20).fill(1)
-  return arr.map((v, i) => {
-    const ramdownStr = Math.random().toString(32).slice(2)
-    const ownerId = Math.random().toString(36).slice(-8)
-    return {
-      id: `${type}_${ramdownStr}`,
-      name: `${name}_${i}`,
-      category: type,
-      descr: `${name}_描述_${i}`,
-      ownerId,
-      createdTime: Date.now(),
-    }
-  })
-}
-
 const stuffTree = {
   [Jumble.DIGITAL]: {
     laptop: '笔记本电脑',
@@ -63,6 +26,55 @@ const stuffTree = {
     treadmill: '跑步机',
     spinning: '动感单车',
   },
+}
+
+const menuMap = {
+  [Jumble.DIGITAL]: '数码',
+  [Jumble.BOOKS]: '书籍',
+  [Jumble.SPORTS]: '运动',
+  [Jumble.FITTING]: '健身器材',
+} as const
+
+export interface StuffItem {
+  id: string
+  name: string
+  descr: string
+  createdTime: number
+}
+
+export function genTestDataOnload(){
+  return Object.keys(menuMap).reduce((preVal, key)=>{
+    const anotherVal = genStuff(key as CategoryTypes, menuMap[key as CategoryTypes])
+    return {...preVal, ...anotherVal}
+  }, {} as Record<string, Product>)
+}
+
+function genStuff(type: CategoryTypes, name: string) {
+  const arr = new Array(5).fill(1)
+
+  return arr.reduce((preVal, v, i) => {
+    const ramdownStr = Math.random().toString(32).slice(2)
+    const ownerId = Math.random().toString(36).slice(-8)
+
+    const category = Category[type]
+    const subSort = Object.keys(stuffTree[type]) as SubCategoryTypes[]
+    const len = subSort.length
+    const subCategoryName = subSort[i%len]
+    
+    const subname = keyExists(stuffTree[type], subCategoryName) ? stuffTree[type][subCategoryName] : ''
+    const product = {
+      id: `${type}_${ramdownStr}`,
+      name: `${name}_${subname}_${i}`,
+      category,
+      subCategory: SubCategory[subCategoryName],
+      descr: `${name}_描述_${i}`,
+      ownerId,
+      createdTime: Date.now(),
+      price: (i+1)*Math.random()*10
+    }
+    preVal[product.id] = product
+    return preVal
+  }, {} as Record<string, Product>)
 }
 
 export function getCategoryName(cateogry: CategoryTypes, subCategory?: SubCategoryTypes){
@@ -114,6 +126,6 @@ export function transProductToFE(product: Product): ProductFE{
   return {
     ...product,
     category: val,
-    subCategory: product.subCategory ? SubCategory[product.subCategory] as SubCategoryTypes : undefined,
+    subCategory: typeof product.subCategory === 'number' ? SubCategory[product.subCategory] as SubCategoryTypes : undefined,
   }
 }
