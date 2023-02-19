@@ -1,6 +1,6 @@
 import { useUserStore } from './../stores/user';
 import type { ValuesOfType } from './../utils/types';
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import Home from '@/views/HomeView.vue'
 import Login from '@/views/Login.vue'
 import Product from '@/views/product/index.vue'
@@ -14,7 +14,7 @@ export const enum ViewNames {
 }
 
 const router = createRouter({
-  history: createWebHashHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
